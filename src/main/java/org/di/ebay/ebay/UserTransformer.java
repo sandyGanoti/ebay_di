@@ -1,5 +1,9 @@
 package org.di.ebay.ebay;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Optional;
 
 import org.di.ebay.BaseTransformer;
@@ -31,7 +35,14 @@ public class UserTransformer extends BaseTransformer<User, UserDTO> {
 		User entity = new User();
 		entity.setId( dto.getId() );
 		entity.setUsername( dto.getUsername() );
-		entity.setPassword( dto.getPassword() );
+		try {
+			MessageDigest digest = MessageDigest.getInstance( "SHA-256" );
+			byte[] hash = digest.digest( dto.getPassword().getBytes( StandardCharsets.UTF_8 ) );
+			String encoded = Base64.getEncoder().encodeToString( hash );
+
+			entity.setPassword( String.valueOf( encoded ) );
+		} catch ( NoSuchAlgorithmException e ) {
+		}
 		entity.setFirstName( dto.getFirstName() );
 		entity.setLastName( dto.getLastName() );
 		entity.setPhoneNumber( dto.getPhoneNumber() );

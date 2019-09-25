@@ -33,8 +33,12 @@ public class UserDAO {
 	@Transactional
 	public User save( final User user ) {
 		user.setCreatedAt( Instant.now( clock ) );
-		entityManager.persist( user );
 
+		try {
+			entityManager.persist( user );
+		} catch ( Exception e ) {
+			return null;
+		}
 		return user;
 	}
 
@@ -80,7 +84,8 @@ public class UserDAO {
 	}
 
 	public List<UserLimitedDTO> getLimitedMany( final List<Long> userIds ) {
-		TypedQuery<UserLimitedDTO> query = entityManager.createQuery( "SELECT NEW org.di.ebay.ebay.transferables.UserLimitedDTO(u.username, u.id) FROM User u where id in (:ids)",
+		TypedQuery<UserLimitedDTO> query = entityManager.createQuery(
+				"SELECT NEW org.di.ebay.ebay.transferables.UserLimitedDTO(u.username, u.id) FROM User u where id in (:ids)",
 				UserLimitedDTO.class ).setParameter( "ids", userIds );
 		return query.getResultList();
 	}

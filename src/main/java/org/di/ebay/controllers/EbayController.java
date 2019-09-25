@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.di.ebay.ebay.auction_item.AuctionItemService;
+import org.di.ebay.ebay.auction_item.ItemCategoryService;
 import org.di.ebay.ebay.bid.BidService;
 import org.di.ebay.ebay.messaging.MessagingService;
 import org.di.ebay.ebay.rating.RatingService;
@@ -22,8 +24,6 @@ import org.di.ebay.ebay.user.UserService;
 import org.di.ebay.exceptions.http.ConflictException;
 import org.di.ebay.exceptions.http.EntityNotFoundException;
 import org.di.ebay.exceptions.http.InvalidActionException;
-import org.di.ebay.ebay.auction_item.AuctionItemService;
-import org.di.ebay.ebay.auction_item.ItemCategoryService;
 import org.di.ebay.exceptions.http.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -421,14 +421,18 @@ public class EbayController {
 		return userService.getLimitedMany( userIds );
 	}
 
-//	curl -d '{"username": 1, "password": "3", "firstName": "hopus", "lastName": "bourdou", "phoneNumber": "123456789", "country": "UK","email": "sandu@sandu"  }'  --header 'X-User-Id':1  -H "Content-Type: application/json"  -X POST -k https://localhost:8443/user/signup
+	//	curl -d '{"username": 1, "password": "bourdou", "firstName": "hopus", "lastName": "bourdou", "phoneNumber": "123456789", "country": "UK","email": "sandu@sandu"  }'  --header 'X-User-Id':1  -H "Content-Type: application/json"  -X POST -k https://localhost:8443/user/signup
 	@PostMapping(value = "user/signup")
 	@ResponseStatus(HttpStatus.CREATED)
 	public Long signUp( @RequestHeader("X-User-Id") String userId, @RequestBody UserDTO userDTO ) {
-		return userService.create( userDTO );
+		Long createdUserId = userService.create( userDTO );
+		if ( createdUserId == null ) {
+			throw new ConflictException( "User name already in use" );
+		}
+		return createdUserId;
 	}
 
-	//	curl -d '{"username": 1, "password": "3" }'  --header 'X-User-Id':1  -H "Content-Type: application/json"  -X POST -k https://localhost:8443/user/login
+	//	curl -d '{"username": 1, "password": "bourdou" }'  --header 'X-User-Id':1  -H "Content-Type: application/json"  -X POST -k https://localhost:8443/user/login
 	@PostMapping(value = "user/login")
 	@ResponseStatus(HttpStatus.OK)
 	public UserLimitedDTO login( @RequestHeader("X-User-Id") String userId,
