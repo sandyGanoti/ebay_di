@@ -214,8 +214,8 @@ public class EbayController {
 		return itemCategoryService.getAuctionsByCategory( category );
 	}
 
-	//TODO: pending
-	@GetMapping(value = "/auctions/search/text/{text}/")
+	// curl -k https://localhost:8443/auctions/search/text/opu --header 'X-User-Id':1
+	@GetMapping(value = "/auctions/search/text/{text}")
 	@ResponseStatus(HttpStatus.OK)
 	public List<ItemCategoryDTO> getAuctionsByCategoryAndText( @PathVariable String text ) {
 		return itemCategoryService.getAuctionsByCategoryAndText( text );

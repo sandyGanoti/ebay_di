@@ -1,11 +1,14 @@
 package org.di.ebay.ebay.auction_item;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
+import org.di.ebay.entities.ebay.AuctionItem;
+import org.di.ebay.entities.ebay.Category;
 import org.di.ebay.entities.ebay.ItemCategory;
 import org.springframework.stereotype.Repository;
 
@@ -15,7 +18,6 @@ public class ItemCategoryDAO {
 	@PersistenceContext
 	private EntityManager entityManager;
 
-	// TODO: douleuei??? Prepei na xrhsimopoihsw to item_category table
 	public List<ItemCategory> getAuctionsByCategory( final String category ) {
 		TypedQuery<ItemCategory> query = entityManager.createQuery(
 				"FROM ItemCategory where category_name = :category", ItemCategory.class )
@@ -23,12 +25,17 @@ public class ItemCategoryDAO {
 		return query.getResultList();
 	}
 
-	//TODO: the seach for text should be rethought and implemented
 	public List<ItemCategory> getAuctionsByCategoryAndText( final String text ) {
-		TypedQuery<ItemCategory> query = entityManager.createQuery(
-				"FROM AuctionItem where category_name = :category and active = 1",
-				ItemCategory.class ).setParameter( "category", text );
-		return query.getResultList();
+		TypedQuery<AuctionItem> query = entityManager.createQuery(
+				"FROM AuctionItem where description like :text",
+				AuctionItem.class ).setParameter( "text", "%" + text + "%" );
+		List<AuctionItem> auctionItems = query.getResultList();
+		List<Long> ids = auctionItems.stream().map( AuctionItem::getId).collect( Collectors.toList() );
+
+		TypedQuery<ItemCategory> queryIC = entityManager.createQuery(
+				"FROM ItemCategory where auction_item in ( :ids )", ItemCategory.class )
+				.setParameter( "ids", ids );
+		return queryIC.getResultList();
 	}
 
 }
